@@ -29,7 +29,7 @@ const server = app.listen(port, () => console.log(`Server running in port ${port
 
 function checkData(data) {
     const keys = Object.keys(data);
-    const lookFor = ['temperature', 'date', 'userResponse'];
+    const lookFor = ['temp', 'date', 'feel'];
     for(const key of lookFor) {
         if (!keys.includes(key)) {
             return false;
@@ -38,20 +38,19 @@ function checkData(data) {
     return true;
 }
 
-app.get('/data', (req, res) => {
-    console.log('projectData: ' + Object.values(projectData));
+app.get('/all', (req, res) => {
     res.send(projectData);
 });
 
 app.post('/data', (req, res) => { 
     if(checkData(req.body)) {
-        projectData['temperature'] = req.body.temperature;
+        projectData['temp'] = req.body.temp;
         projectData['date'] = req.body.date;
-        projectData['userResponse'] = req.body.userResponse;
+        projectData['feel'] = req.body.feel;
         res.send(projectData);
     }
     else { 
         throw new Error(`no ccorrect data sent! 
-            The format should be: {temperature: temperatureValue, date: dateValue, userResponse: userRespondeValue}`);
+            The format should be: {temp: tempValue, date: dateValue, feel: feelValue}`);
     }
 });

@@ -4,7 +4,7 @@ const weatherBaseURL = 'https://weather.visualcrossing.com/VisualCrossingWebServ
 const serverBaseURL = 'http://localhost:3000';
 
 //https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Bucharest?unitGroup=metric&include=current&key=xyz&contentType=json
-const apiKey = "key=MYAT2B7YH4SZ45VKR3Z9YS7D4"; 
+const apiKey = 'MYAT2B7YH4SZ45VKR3Z9YS7D4&units=imperial';
 /*window.addEventListener('load', async () => {
     apiKey = `key=${(await (async () => await fetch(`../.env`).then(response => response.json()))()).API_KEY}`;
 })*/
@@ -12,14 +12,14 @@ const apiKey = "key=MYAT2B7YH4SZ45VKR3Z9YS7D4";
 // Create a new date instance dynamically with JS
 function getDate() {
     let d = new Date();
-    let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+    let newDate = d.getMonth() + 1 + "/" + d.getDate() + "/" + d.getFullYear();
     return newDate;
 }
 
 async function fetchWeather(weatherBaseURL, apiKey, zip) {
     const urlRetrieveOptins = 'unitGroup=metric&include=current';
     const urlContentType = 'contentType=json';
-    const url = `${weatherBaseURL}${zip}?${urlRetrieveOptins}&${apiKey}&${urlContentType}`;
+    const url = `${weatherBaseURL}${zip}?${urlRetrieveOptins}&key=${apiKey}&${urlContentType}`;
     const response = await fetch(url);
     try {
         return (await response.json()).currentConditions.temp;
@@ -44,25 +44,29 @@ async function postEntry(path, data) {
     }
 }
 
-async function getEntry(path) {
-    const response = await fetch(path);
+
+const retrieveData = async () =>{
+    const request = await fetch('/all');
     try {
-        return await response.json();
-    } catch(err) {
-        console.log(err);
+    // Transform into JSON
+    const allData = await request.json()
+    console.log(allData)
+    // Write updated data to DOM elements
+    document.getElementById('temp').innerHTML = Math.round(allData.temp)+ 'degrees';
+    document.getElementById('content').innerHTML = allData.feel;
+    document.getElementById('date').innerHTML =allData.date;
     }
-}
+    catch(error) {
+      console.log("error", error);
+      // appropriately handle the error
+    }
+   }
 
 
 async function generateWeatherEntry() {
     return fetchWeather(weatherBaseURL, apiKey, document.querySelector('#zip').value)
-    .then(temperature => postEntry(`${serverBaseURL}/data`,{temperature: temperature, date: getDate(), userResponse: document.querySelector('#feelings').value}))
-    .then(res => getEntry(`${serverBaseURL}/data`))
-    .then(data => {
-        document.querySelector('#content').innerText = data.userResponse;
-        document.querySelector('#temp').innerText = data.temperature;
-        document.querySelector('#date').innerText = data.date;
-    })
+    .then(temperature => postEntry(`${serverBaseURL}/data`,{temp: temperature, date: getDate(), feel: document.querySelector('#feelings').value}))
+    .then(res => retrieveData())
     .catch(err => console.log(err));
 }
 
